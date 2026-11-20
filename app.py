@@ -149,6 +149,23 @@ def create_app(config=None):
             return error("Tarea no encontrada", 404)
         return jsonify(fila_a_dict(fila))
 
+    # ==== RF03 - Editar tareas ====
+    @app.put("/api/tareas/<int:tarea_id>")
+    def editar_tarea(tarea_id):
+        if buscar_tarea(tarea_id) is None:
+            return error("Tarea no encontrada", 404)
+        tarea, mensaje = validar_tarea(request.get_json(silent=True))
+        if mensaje:
+            return error(mensaje)
+        db = get_db()
+        db.execute(
+            "UPDATE tareas SET nombre = ?, descripcion = ?, prioridad = ?, estado = ?,"
+            " actualizada_en = ? WHERE id = ?",
+            (tarea["nombre"], tarea["descripcion"], tarea["prioridad"], tarea["estado"], ahora(), tarea_id),
+        )
+        db.commit()
+        return jsonify({"mensaje": "Tarea actualizada", "tarea": fila_a_dict(buscar_tarea(tarea_id))})
+
     # ==== Fin de rutas ====
     return app
 

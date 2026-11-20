@@ -166,6 +166,16 @@ def create_app(config=None):
         db.commit()
         return jsonify({"mensaje": "Tarea actualizada", "tarea": fila_a_dict(buscar_tarea(tarea_id))})
 
+    # ==== RF04 - Eliminar tareas ====
+    @app.delete("/api/tareas/<int:tarea_id>")
+    def eliminar_tarea(tarea_id):
+        if buscar_tarea(tarea_id) is None:
+            return error("Tarea no encontrada", 404)
+        db = get_db()
+        db.execute("DELETE FROM tareas WHERE id = ?", (tarea_id,))
+        db.commit()
+        return jsonify({"mensaje": "Tarea eliminada"})
+
     # ==== Fin de rutas ====
     return app
 

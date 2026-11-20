@@ -71,5 +71,48 @@ function pintarTareas(tareas) {
 $("filtro-estado").addEventListener("change", cargarTareas);
 $("filtro-prioridad").addEventListener("change", cargarTareas);
 
+// ==== RF01 / RF06 - Registrar tareas con prioridad ====
+function datosFormulario() {
+  return {
+    nombre: $("nombre").value.trim(),
+    descripcion: $("descripcion").value.trim(),
+    prioridad: $("prioridad").value,
+    estado: $("estado").value,
+  };
+}
+
+function limpiarFormulario() {
+  $("form-tarea").reset();
+  $("tarea-id").value = "";
+  $("prioridad").value = "Media";
+  $("titulo-formulario").textContent = "Nueva tarea";
+  $("btn-guardar").textContent = "Guardar tarea";
+  $("btn-cancelar").hidden = true;
+  $("nombre").classList.remove("invalido");
+}
+
+async function guardarTarea(evento) {
+  evento.preventDefault();
+  const datos = datosFormulario();
+  if (!datos.nombre) {
+    $("nombre").classList.add("invalido");
+    mostrarMensaje("El nombre de la tarea es obligatorio", "error");
+    return;
+  }
+  const id = $("tarea-id").value;
+  try {
+    const r = id
+      ? await peticion(`${API}/${id}`, { method: "PUT", body: JSON.stringify(datos) })
+      : await peticion(API, { method: "POST", body: JSON.stringify(datos) });
+    mostrarMensaje(r.mensaje);
+    limpiarFormulario();
+    cargarTareas();
+  } catch (e) {
+    mostrarMensaje(e.message, "error");
+  }
+}
+
+$("form-tarea").addEventListener("submit", guardarTarea);
+
 // ==== Inicio ====
 cargarTareas();

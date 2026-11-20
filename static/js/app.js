@@ -137,5 +137,21 @@ $("lista-tareas").addEventListener("click", (e) => {
   if (e.target.dataset.editar) editarTarea(e.target.dataset.editar);
 });
 
+// ==== RF04 - Eliminar tareas ====
+async function eliminarTarea(id) {
+  if (!confirm(`¿Eliminar la tarea #${id}?`)) return;
+  try {
+    const r = await peticion(`${API}/${id}`, { method: "DELETE" });
+    mostrarMensaje(r.mensaje);
+    cargarTareas();
+  } catch (e) {
+    mostrarMensaje(e.message, "error");
+  }
+}
+
+$("lista-tareas").addEventListener("click", (e) => {
+  if (e.target.dataset.eliminar) eliminarTarea(e.target.dataset.eliminar);
+});
+
 // ==== Inicio ====
 cargarTareas();

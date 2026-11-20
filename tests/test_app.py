@@ -148,3 +148,10 @@ def test_cambiar_estado_reflejado_en_listado(client):
     assert [t["id"] for t in listado] == [tarea_id]
 
 
+# ==== Issue de error - tarea sin descripcion ====
+def test_registrar_tarea_sin_descripcion(client):
+    resp = client.post("/api/tareas", json={"nombre": "Tarea sin descripcion", "prioridad": "Alta"})
+    assert resp.status_code == 201
+    assert resp.get_json()["tarea"]["descripcion"] == ""
+
+

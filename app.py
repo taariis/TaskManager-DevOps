@@ -94,7 +94,7 @@ def create_app(config=None):
             return None, "El nombre de la tarea es obligatorio"
         if len(nombre) > 120:
             return None, "El nombre no puede superar 120 caracteres"
-        descripcion = data["descripcion"].strip()
+        descripcion = str(data.get("descripcion") or "").strip()
         prioridad = data.get("prioridad") or "Media"
         if prioridad not in PRIORIDADES:
             return None, "Prioridad invalida. Use: " + ", ".join(PRIORIDADES)

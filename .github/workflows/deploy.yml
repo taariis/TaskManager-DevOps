@@ -1,0 +1,36 @@
+name: Despliegue Continuo
+
+# Se ejecuta cuando la Integracion Continua termina con exito en main.
+on:
+  workflow_run:
+    workflows: ["Integracion Continua"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  desplegar:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar despliegue en Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::warning::No se configuro el secreto RENDER_DEPLOY_HOOK; Render desplegara por auto-deploy."
+            exit 0
+          fi
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK"
+          echo "Despliegue solicitado a Render" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verificar aplicacion publicada
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          if [ -z "$APP_URL" ]; then echo "Variable APP_URL no configurada"; exit 0; fi
+          for i in $(seq 1 20); do
+            if curl -fsS "$APP_URL/health"; then echo; echo "Aplicacion disponible en $APP_URL" >> "$GITHUB_STEP_SUMMARY"; exit 0; fi
+            echo "Esperando despliegue... ($i)"; sleep 30
+          done
+          echo "La aplicacion no respondio"; exit 1

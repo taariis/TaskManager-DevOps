@@ -84,6 +84,71 @@ def create_app(config=None):
     def buscar_tarea(tarea_id):
         return get_db().execute("SELECT * FROM tareas WHERE id = ?", (tarea_id,)).fetchone()
 
+    # ==== RF01 / RF02 / RF06 - Registrar y consultar tareas ====
+    def validar_tarea(data):
+        """Valida los datos de una tarea. Devuelve (tarea, mensaje_error)."""
+        if not isinstance(data, dict):
+            return None, "Se esperaba un objeto JSON"
+        nombre = str(data.get("nombre") or "").strip()
+        if not nombre:
+            return None, "El nombre de la tarea es obligatorio"
+        if len(nombre) > 120:
+            return None, "El nombre no puede superar 120 caracteres"
+        descripcion = data["descripcion"].strip()
+        prioridad = data.get("prioridad") or "Media"
+        if prioridad not in PRIORIDADES:
+            return None, "Prioridad invalida. Use: " + ", ".join(PRIORIDADES)
+        estado = data.get("estado") or "Pendiente"
+        if estado not in ESTADOS:
+            return None, "Estado invalido. Use: " + ", ".join(ESTADOS)
+        return {
+            "nombre": nombre,
+            "descripcion": descripcion,
+            "prioridad": prioridad,
+            "estado": estado,
+        }, None
+
+    @app.post("/api/tareas")
+    def registrar_tarea():
+        tarea, mensaje = validar_tarea(request.get_json(silent=True))
+        if mensaje:
+            return error(mensaje)
+        fecha = ahora()
+        db = get_db()
+        cursor = db.execute(
+            "INSERT INTO tareas (nombre, descripcion, prioridad, estado, creada_en, actualizada_en)"
+            " VALUES (?, ?, ?, ?, ?, ?)",
+            (tarea["nombre"], tarea["descripcion"], tarea["prioridad"], tarea["estado"], fecha, fecha),
+        )
+        db.commit()
+        nueva = fila_a_dict(buscar_tarea(cursor.lastrowid))
+        return jsonify({"mensaje": "Tarea registrada correctamente", "tarea": nueva}), 201
+
+    @app.get("/api/tareas")
+    def consultar_tareas():
+        consulta = "SELECT * FROM tareas"
+        filtros, valores = [], []
+        estado = request.args.get("estado")
+        prioridad = request.args.get("prioridad")
+        if estado:
+            filtros.append("estado = ?")
+            valores.append(estado)
+        if prioridad:
+            filtros.append("prioridad = ?")
+            valores.append(prioridad)
+        if filtros:
+            consulta += " WHERE " + " AND ".join(filtros)
+        consulta += " ORDER BY id DESC"
+        filas = get_db().execute(consulta, valores).fetchall()
+        return jsonify([fila_a_dict(f) for f in filas])
+
+    @app.get("/api/tareas/<int:tarea_id>")
+    def consultar_tarea(tarea_id):
+        fila = buscar_tarea(tarea_id)
+        if fila is None:
+            return error("Tarea no encontrada", 404)
+        return jsonify(fila_a_dict(fila))
+
     # ==== Fin de rutas ====
     return app
 

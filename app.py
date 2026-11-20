@@ -1,0 +1,94 @@
+"""TaskManager - Sistema web para la gestion de tareas de TechSolutions.
+
+Backend en Flask con base de datos SQLite.
+"""
+import logging
+import os
+import sqlite3
+import time
+from datetime import datetime, timezone
+
+from flask import Flask, g, jsonify, render_template, request
+
+ESTADOS = ("Pendiente", "En proceso", "Terminada")
+PRIORIDADES = ("Alta", "Media", "Baja")
+VERSION = "1.0.0"
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger("taskmanager")
+
+
+def ahora():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def get_db():
+    """Devuelve una conexion SQLite reutilizable durante la peticion."""
+    if "db" not in g:
+        from flask import current_app
+
+        g.db = sqlite3.connect(current_app.config["DATABASE"])
+        g.db.row_factory = sqlite3.Row
+    return g.db
+
+
+def close_db(_exc=None):
+    db = g.pop("db", None)
+    if db is not None:
+        db.close()
+
+
+def init_db(database):
+    with sqlite3.connect(database) as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS tareas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL,
+                descripcion TEXT NOT NULL DEFAULT '',
+                prioridad TEXT NOT NULL DEFAULT 'Media',
+                estado TEXT NOT NULL DEFAULT 'Pendiente',
+                creada_en TEXT NOT NULL,
+                actualizada_en TEXT NOT NULL
+            )
+            """
+        )
+
+
+def fila_a_dict(fila):
+    return {clave: fila[clave] for clave in fila.keys()}
+
+
+def error(mensaje, codigo=400):
+    return jsonify({"error": mensaje}), codigo
+
+
+def create_app(config=None):
+    app = Flask(__name__)
+    app.config["DATABASE"] = os.environ.get(
+        "DATABASE_PATH", os.path.join(app.instance_path, "taskmanager.db")
+    )
+    if config:
+        app.config.update(config)
+
+    carpeta = os.path.dirname(app.config["DATABASE"])
+    if carpeta:
+        os.makedirs(carpeta, exist_ok=True)
+    init_db(app.config["DATABASE"])
+    app.teardown_appcontext(close_db)
+
+    @app.route("/")
+    def index():
+        return render_template("index.html", estados=ESTADOS, prioridades=PRIORIDADES)
+
+    def buscar_tarea(tarea_id):
+        return get_db().execute("SELECT * FROM tareas WHERE id = ?", (tarea_id,)).fetchone()
+
+    # ==== Fin de rutas ====
+    return app
+
+
+app = create_app()
+
+if __name__ == "__main__":
+    app.run(debug=True)

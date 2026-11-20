@@ -155,3 +155,9 @@ def test_registrar_tarea_sin_descripcion(client):
     assert resp.get_json()["tarea"]["descripcion"] == ""
 
 
+# ==== Operate & Monitor ====
+def test_health(client):
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.get_json()["status"] == "ok"
+    assert "X-Response-Time-ms" in resp.headers

@@ -193,6 +193,29 @@ def create_app(config=None):
         db.commit()
         return jsonify({"mensaje": "Estado actualizado", "tarea": fila_a_dict(buscar_tarea(tarea_id))})
 
+    # ==== Operate & Monitor - Salud y tiempos de respuesta ====
+    @app.before_request
+    def iniciar_cronometro():
+        g.inicio = time.perf_counter()
+
+    @app.after_request
+    def registrar_peticion(respuesta):
+        inicio = g.get("inicio")
+        if inicio is not None:
+            ms = (time.perf_counter() - inicio) * 1000
+            respuesta.headers["X-Response-Time-ms"] = f"{ms:.2f}"
+            logger.info("%s %s %s %.2fms", request.method, request.path, respuesta.status_code, ms)
+        return respuesta
+
+    @app.get("/health")
+    def health():
+        try:
+            total = get_db().execute("SELECT COUNT(*) FROM tareas").fetchone()[0]
+            return jsonify({"status": "ok", "version": VERSION, "tareas": total, "hora": ahora()})
+        except sqlite3.Error as exc:
+            logger.error("Fallo de base de datos: %s", exc)
+            return jsonify({"status": "error", "detalle": "base de datos no disponible"}), 503
+
     # ==== Fin de rutas ====
     return app
 

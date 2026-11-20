@@ -1,0 +1,50 @@
+name: Monitoreo
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # cada 6 horas
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  monitorear:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar disponibilidad y tiempo de respuesta
+        id: salud
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          if [ -z "$APP_URL" ]; then echo "::warning::Configura la variable APP_URL"; exit 0; fi
+          {
+            echo "## Registro de monitoreo - $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo "| Endpoint | Codigo HTTP | Tiempo (s) |"
+            echo "|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          fallo=0
+          for ruta in /health / /api/tareas; do
+            resultado=$(curl -s -o /dev/null -w "%{http_code} %{time_total}" --max-time 60 "$APP_URL$ruta" || echo "000 60")
+            codigo=${resultado% *}; tiempo=${resultado#* }
+            echo "| $ruta | $codigo | $tiempo |" >> "$GITHUB_STEP_SUMMARY"
+            [ "$codigo" = "200" ] || fallo=1
+          done
+          echo "fallo=$fallo" >> "$GITHUB_OUTPUT"
+          [ "$fallo" = "0" ]
+
+      - name: Registrar incidencia automatica
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "Incidencia: la aplicacion no responde ($(date -u '+%Y-%m-%d %H:%M'))" \
+            --label incidencia \
+            --body "Fecha de deteccion: $(date -u)
+          Funcionalidad afectada: disponibilidad general ($APP_URL)
+          Descripcion: el workflow de monitoreo detecto una respuesta distinta de HTTP 200.
+          Evidencia: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          Responsable de corregirlo: Ingeniero DevOps / QA
+          Solucion aplicada: (pendiente)"

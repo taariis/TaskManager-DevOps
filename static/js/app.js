@@ -153,5 +153,23 @@ $("lista-tareas").addEventListener("click", (e) => {
   if (e.target.dataset.eliminar) eliminarTarea(e.target.dataset.eliminar);
 });
 
+// ==== RF05 - Cambiar estado ====
+async function cambiarEstado(id, estado) {
+  try {
+    const r = await peticion(`${API}/${id}/estado`, {
+      method: "PATCH",
+      body: JSON.stringify({ estado }),
+    });
+    mostrarMensaje(r.mensaje);
+    cargarTareas();
+  } catch (e) {
+    mostrarMensaje(e.message, "error");
+  }
+}
+
+$("lista-tareas").addEventListener("change", (e) => {
+  if (e.target.dataset.estado) cambiarEstado(e.target.dataset.estado, e.target.value);
+});
+
 // ==== Inicio ====
 cargarTareas();

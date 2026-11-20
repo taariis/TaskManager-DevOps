@@ -114,5 +114,28 @@ async function guardarTarea(evento) {
 
 $("form-tarea").addEventListener("submit", guardarTarea);
 
+// ==== RF03 - Editar tareas ====
+async function editarTarea(id) {
+  try {
+    const t = await peticion(`${API}/${id}`);
+    $("tarea-id").value = t.id;
+    $("nombre").value = t.nombre;
+    $("descripcion").value = t.descripcion;
+    $("prioridad").value = t.prioridad;
+    $("estado").value = t.estado;
+    $("titulo-formulario").textContent = `Editar tarea #${t.id}`;
+    $("btn-guardar").textContent = "Actualizar tarea";
+    $("btn-cancelar").hidden = false;
+    $("nombre").focus();
+  } catch (e) {
+    mostrarMensaje(e.message, "error");
+  }
+}
+
+$("btn-cancelar").addEventListener("click", limpiarFormulario);
+$("lista-tareas").addEventListener("click", (e) => {
+  if (e.target.dataset.editar) editarTarea(e.target.dataset.editar);
+});
+
 // ==== Inicio ====
 cargarTareas();

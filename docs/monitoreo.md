@@ -23,11 +23,15 @@ Aplicación: https://taskmanager-devops-c1yw.onrender.com. Mediciones del 2026-1
 
 La primera ejecución de **Monitoreo** que consultó la aplicación es la [45500459254](https://github.com/taariis/TaskManager-DevOps/actions/runs/45500459254). Las anteriores terminaron en verde sin revisar nada, porque `APP_URL` no estaba configurada.
 
-## Riesgos previstos (Issues #31 y #32)
+## Incidencia observada (Issue #32)
 
-Son limitaciones conocidas del plan gratuito de Render; a la fecha **no se han observado** en esta aplicación.
+Las tareas se pierden cuando el servicio se reinicia, porque SQLite está en `/tmp`. Evidencia del 2026-11-24 (UTC):
 
-| Riesgo | Funcionalidad | Descripción | Acción prevista |
-|---|---|---|---|
-| Primera carga lenta tras inactividad | Disponibilidad | El servicio se suspende tras un periodo sin tráfico | Plan de pago en producción |
-| Pérdida de tareas al redesplegar | Almacenamiento | SQLite está en `/tmp`, un disco efímero | Base de datos persistente en v1.1.0 (#33) |
+- 22:23:51: 5 tareas. 22:33:03: 0 tareas (causa de ese reinicio sin confirmar; la siguiente tarea recibió `id = 1`).
+- 22:33:07: se combina el PR #39. 22:33:26: 1 tarea. 22:34:18: 0 tareas.
+
+**Solución:** pendiente; base de datos persistente en v1.1.0 (#33).
+
+## Riesgo previsto (Issue #31)
+
+Primera carga lenta tras inactividad en el plan gratuito de Render. **No se ha observado.** Acción prevista: plan de pago en producción.

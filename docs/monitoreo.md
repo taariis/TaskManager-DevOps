@@ -13,17 +13,21 @@
 
 ## Registro de monitoreo
 
-Copiar los valores de la tabla que genera el workflow **Monitoreo** (pestaña Actions → ejecución → Summary).
+Aplicación: https://taskmanager-devops-c1yw.onrender.com. Mediciones del 2026-11-24 a las 22:23 UTC, hechas con `curl` desde un equipo local (tres por endpoint).
 
-| Fecha | Endpoint | Código HTTP | Tiempo de respuesta | Observaciones |
-|---|---|---|---|---|
-| _AAAA-MM-DD_ | /health | 200 | _x.xx s_ | |
-| _AAAA-MM-DD_ | / | 200 | _x.xx s_ | |
-| _AAAA-MM-DD_ | /api/tareas | 200 | _x.xx s_ | |
+| Endpoint | Código HTTP | Tiempos (s) |
+|---|---|---|
+| /health | 200 | 0.250, 0.222, 0.217 |
+| / | 200 | 0.234, 0.278, 0.232 |
+| /api/tareas | 200 | 0.222, 0.227, 0.240 |
 
-## Incidencias documentadas (ver Issues con etiqueta `incidencia`)
+La primera ejecución de **Monitoreo** que consultó la aplicación es la [45500459254](https://github.com/taariis/TaskManager-DevOps/actions/runs/45500459254). Las anteriores terminaron en verde sin revisar nada, porque `APP_URL` no estaba configurada.
 
-| Incidencia | Funcionalidad afectada | Descripción | Responsable | Solución aplicada |
-|---|---|---|---|---|
-| Primera carga lenta tras inactividad | Disponibilidad | En el plan gratuito de Render el servicio se suspende tras 15 min sin uso; la primera petición tarda ~30–50 s | Ingeniero DevOps / QA | El monitoreo periódico lo registra; para producción se recomienda un plan de pago |
-| Pérdida de tareas al redesplegar | Almacenamiento | El disco del plan gratuito es efímero (SQLite en `/tmp`), por lo que las tareas se borran en cada despliegue | Desarrollador backend | Documentado; en v1.1 se migrará a PostgreSQL o a un disco persistente |
+## Riesgos previstos (Issues #31 y #32)
+
+Son limitaciones conocidas del plan gratuito de Render; a la fecha **no se han observado** en esta aplicación.
+
+| Riesgo | Funcionalidad | Descripción | Acción prevista |
+|---|---|---|---|
+| Primera carga lenta tras inactividad | Disponibilidad | El servicio se suspende tras un periodo sin tráfico | Plan de pago en producción |
+| Pérdida de tareas al redesplegar | Almacenamiento | SQLite está en `/tmp`, un disco efímero | Base de datos persistente en v1.1.0 (#33) |

@@ -13,19 +13,19 @@ Las ramas permiten que cada integrante trabaje en una funcionalidad aislada sin 
 Es una solicitud para integrar los cambios de una rama en otra (normalmente `main`). Muestra las diferencias, permite que otro integrante revise y comente el código, ejecuta automáticamente la integración continua y deja un registro de qué se cambió, por qué y quién lo aprobó.
 
 **5. ¿Qué problemas permite detectar la integración continua?**
-Errores de sintaxis, pruebas unitarias que fallan, dependencias faltantes, conflictos entre cambios de distintos desarrolladores y regresiones (funcionalidades que dejan de funcionar). En este proyecto detectó el error HTTP 500 al registrar una tarea sin descripción antes de integrarlo a `main`.
+Errores de sintaxis, pruebas unitarias que fallan, dependencias faltantes, conflictos entre cambios de distintos desarrolladores y regresiones (funcionalidades que dejan de funcionar). En este proyecto se simuló un error HTTP 500 al registrar una tarea sin descripción: ya estaba en `main`, y la CI lo evidenció cuando se agregó una prueba que lo cubría. Esto muestra que la CI solo detecta lo que las pruebas cubren.
 
 **6. ¿Cuál es la diferencia entre integración continua y entrega continua?**
 La integración continua compila y prueba automáticamente el código cada vez que alguien hace un push o un Pull Request. La entrega continua va un paso más allá: deja preparada una versión estable y empaquetada (Release v1.0.0 y artefacto) lista para desplegarse, aunque la publicación final puede requerir aprobación manual.
 
 **7. ¿Qué diferencia existe entre entrega continua y despliegue continuo?**
-En la entrega continua la versión queda lista para producción, pero alguien decide cuándo publicarla. En el despliegue continuo cada cambio que pasa las pruebas se publica automáticamente en el servidor (en este proyecto, Render redespliega cada vez que se integra a `main` y la CI pasa).
+En la entrega continua la versión queda lista para producción, pero alguien decide cuándo publicarla. En el despliegue continuo cada cambio que pasa las pruebas se publica automáticamente en el servidor (en Render esto se configura con Auto-Deploy «After CI Checks Pass»).
 
 **8. ¿Por qué es importante automatizar las pruebas?**
 Porque se ejecutan siempre, de forma rápida y sin depender de que alguien lo recuerde. Garantizan que los cambios nuevos no rompan lo que ya funcionaba, reducen errores humanos y dan confianza para integrar y publicar con frecuencia.
 
 **9. ¿Qué sucede si se integra código que contiene errores?**
-La rama principal deja de ser estable, el error puede llegar a los usuarios finales, otros integrantes trabajan sobre código defectuoso y corregirlo cuesta más tiempo. Por eso la CI bloquea o alerta antes de hacer el merge.
+La rama principal deja de ser estable, el error puede llegar a los usuarios finales, otros integrantes trabajan sobre código defectuoso y corregirlo cuesta más tiempo. Por eso la CI alerta antes del merge (para bloquearlo hay que proteger la rama `main`).
 
 **10. ¿Por qué DevOps requiere monitorear una aplicación después de publicarla?**
 Porque en producción aparecen problemas que no se ven en pruebas: caídas del servidor, lentitud, fallas de la base de datos o uso real distinto al esperado. El monitoreo permite detectarlos a tiempo, registrarlos como incidencias y alimentar la planeación de la siguiente versión. Así se cierra el ciclo DevOps.

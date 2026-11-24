@@ -6,6 +6,8 @@ Sistema web para la gestión de tareas.
 
 TaskManager es una aplicación web para **TechSolutions** que centraliza el registro, la asignación y el seguimiento de las tareas de los empleados. Sustituye a las hojas de cálculo que se usaban antes. El proyecto se construyó siguiendo las fases del ciclo de vida **DevOps** con GitHub como plataforma principal.
 
+**Aplicación publicada:** https://taskmanager-devops-c1yw.onrender.com
+
 ## Funcionalidades
 
 | Código | Funcionalidad | Implementación |

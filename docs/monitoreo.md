@@ -27,7 +27,7 @@ La primera ejecución de **Monitoreo** que consultó la aplicación es la [45500
 
 Las tareas se pierden cuando el servicio se reinicia, porque SQLite está en `/tmp`. Evidencia del 2026-11-24 (UTC):
 
-- 22:23:51: 5 tareas. 22:33:03: 0 tareas (causa de ese reinicio sin confirmar; la siguiente tarea recibió `id = 1`).
+- 22:23:51: 5 tareas. 22:33:03: 0 tareas (coincide con el despliegue de `caade48`, activo a las 22:24 según Render; la siguiente tarea recibió `id = 1`).
 - 22:33:07: se combina el PR #39. 22:33:26: 1 tarea. 22:34:18: 0 tareas.
 
 **Solución:** pendiente; base de datos persistente en v1.1.0 (#33).

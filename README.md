@@ -80,10 +80,6 @@ pytest -v                # ejecutar pruebas
 - [Propuestas de mejora y plan v1.1](docs/mejoras.md)
 - [Preguntas de análisis](docs/preguntas_analisis.md)
 
-## Equipo
+## Autoría
 
-| Rol | Integrante |
-|---|---|
-| Product Owner | _Integrante 1_ |
-| Desarrollador (backend) | _Integrante 2_ |
-| Desarrollador (frontend) / DevOps-QA | _Integrante 3_ |
+Proyecto individual: todos los roles (Product Owner, desarrollo y DevOps/QA) recaen en la misma persona.
